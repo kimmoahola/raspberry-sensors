@@ -1,7 +1,10 @@
 # coding=utf-8
-from decimal import Decimal, ROUND_HALF_UP
+from __future__ import unicode_literals
 
 import datetime
+import json
+import sys
+from decimal import Decimal, ROUND_HALF_UP
 
 import pytz
 
@@ -22,3 +25,13 @@ def decimal_round(value):
 
     return value.quantize(Decimal('.1'), rounding=ROUND_HALF_UP)
 
+
+def print_dict_as_utf_8_json(data_out):
+
+    if sys.version_info.major < 3:
+        stdout = sys.stdout
+    else:
+        stdout = sys.stdout.buffer
+
+    stdout.write(json.dumps(data_out, ensure_ascii=False).encode('utf-8'))
+    stdout.write(b'\n')

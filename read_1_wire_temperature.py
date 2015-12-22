@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding=utf-8
+from __future__ import unicode_literals
+
 import argparse
 import glob
-import json
 import os
 import random
 import time
@@ -10,7 +11,7 @@ from decimal import Decimal
 
 from retry import retry
 
-from helpers import decimal_round, get_now
+from helpers import decimal_round, get_now, print_dict_as_utf_8_json
 
 __author__ = 'Kimmo Ahola'
 __license__ = 'MIT'
@@ -63,7 +64,7 @@ def read_5_and_take_middle_value(device_id):
     readings = sorted(readings, key=lambda r: r[1])
 
     # Take the middle value
-    return readings[len(readings)/2]
+    return readings[len(readings)//2]
 
 
 def simulate():
@@ -116,7 +117,7 @@ def main():
             'temperature': str(temperature),
         }
 
-        print(json.dumps(data_out).encode('utf-8'))
+        print_dict_as_utf_8_json(data_out)
     else:
         raise SystemError()
 

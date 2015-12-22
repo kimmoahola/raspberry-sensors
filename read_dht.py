@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # coding=utf-8
+from __future__ import unicode_literals
+
 import argparse
 import gc
-import json
 import random
 import time
 
 from retry import retry
 
-from helpers import decimal_round, get_now
+from helpers import decimal_round, get_now, print_dict_as_utf_8_json
 
 __author__ = 'Kimmo Ahola'
 __license__ = 'MIT'
@@ -55,14 +56,19 @@ def guess_sensor_type(hum_hi, hum_lo, temp_hi, temp_lo):
     """
     Returns a guess of sensor type.
     """
-    sensor_type = 0
-
     if temp_hi & 128:
         # This is for sure.
         # Only DHT22 can measure temperatures below zero.
         sensor_type = SENSOR_DHT22
 
-    if hum_lo == 0 and temp_lo == 0:
+    elif hum_lo != 0 or temp_lo != 0:
+        # This is for sure.
+        # Only DHT22 can have non-zero lower bytes.
+        sensor_type = SENSOR_DHT22
+
+    else:
+        # Positive or zero temperature, or lower bytes are zero.
+
         # With DHT11 the lower bytes are always zero.
         # With DHT22 the lower bytes can be zero.
 
@@ -116,7 +122,7 @@ def read_temperature_and_humidity(pin):
     time.sleep(0.02)
     GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-    for i in range(0, 500):
+    for i in range(500):
         data.append(GPIO.input(pin))
 
     GPIO.cleanup()
@@ -147,10 +153,10 @@ def read_temperature_and_humidity(pin):
     return now, temperature, humidity
 
 
-def read_5_and_take_middle_value(pin):
+def read_3_and_take_middle_value(pin):
 
     readings = []
-    for i in range(5):
+    for i in range(3):
         if i > 0:
             # Sleep only between reads
             time.sleep(DELAY_BETWEEN_READS)
@@ -160,7 +166,7 @@ def read_5_and_take_middle_value(pin):
     readings = sorted(readings, key=lambda r: r[1])
 
     # Take the middle value
-    return readings[len(readings)/2]
+    return readings[len(readings)//2]
 
 
 def simulate():
@@ -181,7 +187,7 @@ def main():
         stuff = simulate()
     else:
         gc.disable()
-        stuff = read_5_and_take_middle_value(args.pin)
+        stuff = read_3_and_take_middle_value(args.pin)
 
     if stuff:
 
@@ -193,7 +199,7 @@ def main():
             'humidity': str(humidity),
         }
 
-        print(json.dumps(data_out).encode('utf-8'))
+        print_dict_as_utf_8_json(data_out)
     else:
         raise SystemError()
 
