@@ -1,0 +1,6 @@
+/.idea
+/crontab
+*.log
+*.pyc
+*.json
+*.sqlite

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import argparse
 import glob
+import logging
 import os
 import random
 import time
@@ -15,11 +16,21 @@ from helpers import decimal_round, get_now, print_dict_as_utf_8_json
 
 __author__ = 'Kimmo Ahola'
 __license__ = 'MIT'
-__version__ = '1.0'
+__version__ = '1.1'
 __email__ = 'kimmo.ahola@gmail.com'
 
 DEVICE_BASE_DIR = '/sys/bus/w1/devices/'
-DELAY_BETWEEN_READS = 1  # Seconds
+RETRY_DELAY = 5  # Seconds
+DELAY_BETWEEN_READS = 7  # Seconds
+
+
+logger = logging.getLogger('read_1_wire_temperature')
+handler = logging.FileHandler('read_1_wire_temperature.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+logger.info('----- START -----')
 
 
 def read_device_file(device_file_name):
@@ -27,7 +38,7 @@ def read_device_file(device_file_name):
         return f.readlines()
 
 
-@retry(ValueError, tries=50, delay=DELAY_BETWEEN_READS)
+@retry(ValueError, tries=50, delay=RETRY_DELAY)
 def read_temp(device_file_name):
 
     lines = read_device_file(device_file_name)
@@ -46,15 +57,30 @@ def read_temp(device_file_name):
         raise ValueError('Sensor initializing.')
 
     temp_decimal = Decimal(temp_string) / Decimal(1000)
-    return get_now(), decimal_round(temp_decimal)
+
+    # Sometimes (rarely) zero means invalid, but sometimes it's a valid value -> treat it always as invalid to be sure
+    if temp_decimal < -55 or temp_decimal > 125 or temp_decimal == 0:
+        raise ValueError('Temperature out of range. Was %s.' % temp_decimal)
+
+    return get_now(), temp_decimal
 
 
-def read_5_and_take_middle_value(device_id):
+@retry(ValueError, tries=6, delay=30)
+def ensure_valid_time():
+    if os.system("(ntpq -pn | egrep '^\*') >/dev/null 2>&1") != 0:
+        raise ValueError('No valid time')
+    return True
+
+
+def read_n_and_take_middle_value(device_id, n):
 
     device_file_name = device_id_to_device_file_name(device_id)
 
+    ensure_valid_time()
+
     readings = []
-    for i in range(5):
+
+    for i in range(n):
         if i > 0:
             # Sleep only between reads
             time.sleep(DELAY_BETWEEN_READS)
@@ -103,10 +129,11 @@ def main():
     if args.simulate:
         stuff = simulate()
     else:
-        os.system('modprobe w1-gpio')
-        os.system('modprobe w1-therm')
-
-        stuff = read_5_and_take_middle_value(args.device_id)
+        try:
+            stuff = read_n_and_take_middle_value(args.device_id, 5)
+        except ValueError as e:
+            logger.error(e)
+            stuff = None
 
     if stuff:
 
@@ -118,8 +145,8 @@ def main():
         }
 
         print_dict_as_utf_8_json(data_out)
-    else:
-        raise SystemError()
+
+    logger.info('-----  END  -----')
 
 
 if __name__ == '__main__':
