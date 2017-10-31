@@ -12,7 +12,7 @@ Python scripts to read various temperature sensors, and to upload them to google
 
 - Setup pyenv or just install required packages globally: `pip install -r requirements.txt`
 
-- Run `python to_sheet.py ...` with correct arguments (see crontab_example)
+- Run `python to_sheet.py ...` with correct arguments (see crontab_example) to save google sheet credentials
 
 - Follow the printed link
 
@@ -27,6 +27,10 @@ Python scripts to read various temperature sensors, and to upload them to google
 
 #### Setup backup
 
-To get credentials for google drive communication, follow these instructions: https://pythonhosted.org/PyDrive/quickstart.html Rename the downloaded file to `pydrive_secrets.json` and copy it to this directory
+To get credentials for google drive communication, follow these instructions https://pythonhosted.org/PyDrive/quickstart.html with one exception: Select 'other' not 'Web application'.
+
+Rename the downloaded file to `pydrive_secrets.json` and copy it to this directory
+
+Run `python copy_file_to_drive.py ...` with correct arguments (see crontab_example) to save google drive credentials
 
 Then enable backup by uncommenting and modifying the backup line in crontab
