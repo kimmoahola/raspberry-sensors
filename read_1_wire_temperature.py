@@ -16,7 +16,7 @@ from helpers import decimal_round, get_now, print_dict_as_utf_8_json
 
 __author__ = 'Kimmo Ahola'
 __license__ = 'MIT'
-__version__ = '1.1'
+__version__ = '1.2'
 __email__ = 'kimmo.ahola@gmail.com'
 
 DEVICE_BASE_DIR = '/sys/bus/w1/devices/'
@@ -39,7 +39,7 @@ def read_device_file(device_file_name):
 
 
 @retry(ValueError, tries=50, delay=RETRY_DELAY)
-def read_temp(device_file_name):
+def read_temp(device_file_name, disallow_zero):
 
     lines = read_device_file(device_file_name)
 
@@ -58,8 +58,8 @@ def read_temp(device_file_name):
 
     temp_decimal = Decimal(temp_string) / Decimal(1000)
 
-    # Sometimes (rarely) zero means invalid, but sometimes it's a valid value -> treat it always as invalid to be sure
-    if temp_decimal < -55 or temp_decimal > 125 or temp_decimal == 0:
+    # Sometimes (rarely) zero means invalid, but sometimes it's a valid value
+    if temp_decimal < -55 or temp_decimal > 125 or disallow_zero and temp_decimal == 0:
         raise ValueError('Temperature out of range. Was %s.' % temp_decimal)
 
     return get_now(), temp_decimal
@@ -72,7 +72,7 @@ def ensure_valid_time():
     return True
 
 
-def read_n_and_take_middle_value(device_id, n):
+def read_n_and_take_middle_value(device_id, disallow_zero, n):
 
     device_file_name = device_id_to_device_file_name(device_id)
 
@@ -84,7 +84,7 @@ def read_n_and_take_middle_value(device_id, n):
         if i > 0:
             # Sleep only between reads
             time.sleep(DELAY_BETWEEN_READS)
-        readings.append(read_temp(device_file_name))
+        readings.append(read_temp(device_file_name, disallow_zero))
 
     # Sort by temperature
     readings = sorted(readings, key=lambda r: r[1])
@@ -123,6 +123,8 @@ def main():
 
     parser.add_argument('--device-id', required=False, type=str, help='Device ID.')
     parser.add_argument('--simulate', required=False, action='store_true', help='Return random values for testing.')
+    parser.add_argument('--disallow-zero', required=False, action='store_true',
+                        help='Treat zero temperature as a sensor error.')
 
     args = parser.parse_args()
 
@@ -130,7 +132,7 @@ def main():
         stuff = simulate()
     else:
         try:
-            stuff = read_n_and_take_middle_value(args.device_id, 5)
+            stuff = read_n_and_take_middle_value(args.device_id, args.disallow_zero, 5)
         except ValueError as e:
             logger.error(e)
             stuff = None
