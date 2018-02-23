@@ -3,9 +3,9 @@ from __future__ import print_function
 
 import argparse
 import json
+import logging
 import os
 import smtplib
-import sys
 import tempfile
 import time
 from email.mime.text import MIMEText
@@ -13,6 +13,14 @@ from email.mime.text import MIMEText
 from slugify import slugify
 
 import helpers
+
+logger = logging.getLogger('send_email')
+handler = logging.FileHandler('send_email.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+logger.info('----- START -----')
 
 
 def minutes_from_last_email(title):
@@ -77,10 +85,7 @@ def email(addresses, subject, message):
         send_email(address, mime_text)
 
 
-def read_stdin():
-    return json.loads(sys.stdin.read().decode('utf-8').strip())
-
-
+@helpers.exception(logger=logger)
 def main():
 
     parser = argparse.ArgumentParser(
@@ -96,13 +101,15 @@ def main():
 
     args = parser.parse_args()
 
-    data_in = read_stdin()
+    data_in = helpers.read_stdin()
 
     process_data(args.address, args.title, args.if_what, args.if_gt, args.if_lt, args.throttle, data_in)
 
     data_out = json.dumps(data_in)
 
     print(data_out.encode('utf-8'))
+
+    logger.info('-----  END  -----')
 
 
 if __name__ == '__main__':

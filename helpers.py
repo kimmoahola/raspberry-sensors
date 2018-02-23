@@ -5,6 +5,7 @@ import datetime
 import json
 import sys
 from decimal import Decimal, ROUND_HALF_UP
+from functools import wraps
 
 import arrow
 import pytz
@@ -52,3 +53,24 @@ def print_dict_as_utf_8_json(data_out):
 
     stdout.write(json.dumps(data_out, ensure_ascii=False).encode('utf-8'))
     stdout.write(b'\n')
+
+
+def exception(logger):
+    def exception_inner(f):
+
+        @wraps(f)
+        def exception_wrap(*args, **kw):
+            # noinspection PyBroadException
+            try:
+                return f(*args, **kw)
+            except Exception as e:
+                logger.exception(e)
+                exit(1)
+
+        return exception_wrap
+
+    return exception_inner
+
+
+def read_stdin():
+    return json.loads(sys.stdin.read().decode('utf-8').strip())

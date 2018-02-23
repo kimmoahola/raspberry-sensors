@@ -1,8 +1,19 @@
 # coding=utf-8
 import argparse
 import json
-import sys
+import logging
 import sqlite3
+
+import helpers
+
+
+logger = logging.getLogger('to_sqlite')
+handler = logging.FileHandler('to_sqlite.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+logger.info('----- START -----')
 
 
 def init_sqlite(c, table_name):
@@ -27,10 +38,7 @@ def write_to_sqlite(file_name, table_name, data_in):
     conn.close()
 
 
-def read_stdin():
-    return json.loads(sys.stdin.read().decode('utf-8').strip())
-
-
+@helpers.exception(logger=logger)
 def main():
 
     parser = argparse.ArgumentParser(
@@ -42,13 +50,15 @@ def main():
 
     args = parser.parse_args()
 
-    data_in = read_stdin()
+    data_in = helpers.read_stdin()
 
     write_to_sqlite(args.file_name, args.table_name, data_in)
 
     data_out = json.dumps(data_in)
 
     print(data_out.encode('utf-8'))
+
+    logger.info('-----  END  -----')
 
 
 if __name__ == '__main__':
