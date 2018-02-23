@@ -4,6 +4,8 @@ import json
 import logging
 import sqlite3
 
+from retry import retry
+
 import helpers
 
 
@@ -25,6 +27,7 @@ def init_sqlite(c, table_name):
                   )""" % table_name)
 
 
+@retry(tries=3, delay=10)
 def write_to_sqlite(file_name, table_name, data_in):
     conn = sqlite3.connect(file_name)
     c = conn.cursor()
