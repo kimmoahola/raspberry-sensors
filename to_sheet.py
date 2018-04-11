@@ -81,6 +81,19 @@ def highest_and_lowest_temperature(cursor, table_name, start_datetime, end_datet
         return max_temperature_sqlite_row, min_temperature_sqlite_row
 
 
+def first_day_interval():
+    return Decimal('0.5')
+
+
+def first_day_range():
+    # 1 day, 0.5 hour intervals
+    return range(int(1 * 24/first_day_interval()))
+
+
+def num_of_first_day_rows():
+    return int(len(first_day_range()) * 2 + 2)
+
+
 def filtered_sqlite_rows(cursor, table_name, average_minutes):
 
     latest_sqlite_row = sqlite_get_last_row(cursor, table_name)
@@ -88,22 +101,29 @@ def filtered_sqlite_rows(cursor, table_name, average_minutes):
     yield latest_sqlite_row + (last_row_average,)
     start_datetime = arrow.get(latest_sqlite_row[1]).to(helpers.TARGET_TIMEZONE).ceil('day')
 
+    interval = float(first_day_interval())
+    for _ in first_day_range():
+        start_datetime, row1, row2 = sqlite_rows_for_time_range(cursor, table_name, start_datetime, interval,
+                                                                average_minutes)
+        yield row1
+        yield row2
+
     interval = 3
-    for i in range(1 * 7 * 24/interval):  # 1 week, 3 hour intervals
+    for _ in range(1 * 7 * 24/interval):  # 1 week, 3 hour intervals
         start_datetime, row1, row2 = sqlite_rows_for_time_range(cursor, table_name, start_datetime, interval,
                                                                 average_minutes)
         yield row1
         yield row2
 
     interval = 6
-    for i in range(1 * 7 * 24/interval):  # 1 week, 6 hour intervals
+    for _ in range(1 * 7 * 24/interval):  # 1 week, 6 hour intervals
         start_datetime, row1, row2 = sqlite_rows_for_time_range(cursor, table_name, start_datetime, interval,
                                                                 average_minutes)
         yield row1
         yield row2
 
     interval = 24
-    for i in range(10 * 7 * 24/interval):  # 10 weeks, 24 hour intervals
+    for _ in range(10 * 7 * 24/interval):  # 10 weeks, 24 hour intervals
         start_datetime, row1, row2 = sqlite_rows_for_time_range(cursor, table_name, start_datetime, interval,
                                                                 average_minutes)
         yield row1
@@ -248,7 +268,7 @@ def get_sqlite_rows(args, cursor):
 
         rows_to_update = []
 
-        sliced_sqlite_rows = itertools.islice(sqlite_rows, 18)
+        sliced_sqlite_rows = itertools.islice(sqlite_rows, num_of_first_day_rows())
 
         for row in sliced_sqlite_rows:
             if not has_num_rows(rows_to_update, 3):
