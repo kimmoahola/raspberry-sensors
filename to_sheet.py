@@ -245,7 +245,7 @@ def do_gspread_stuff(args, cursor):
 
     sqlite_rows = get_sqlite_rows(args, cursor)
 
-    write_to_gspread(wks, list(sqlite_rows))
+    write_to_gspread(wks, sqlite_rows)
 
 
 @timing
@@ -276,7 +276,7 @@ def get_sqlite_rows(args, cursor):
 
         sqlite_rows = rows_to_update
 
-    return sqlite_rows
+    return list(sqlite_rows)
 
 
 if __name__ == '__main__':
