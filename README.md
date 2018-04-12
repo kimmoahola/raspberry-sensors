@@ -1,6 +1,6 @@
 # raspberry-sensors
 
-Python scripts to read various temperature sensors, and to upload them to google sheets.
+Python scripts to read "1-wire" temperature sensors, and to upload results to a google sheet.
 
 ## Install
 
