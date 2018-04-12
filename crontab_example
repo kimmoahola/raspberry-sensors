@@ -1,5 +1,5 @@
 */5 * * * * pi cd /home/pi/raspberry-sensors/ && sudo python read_1_wire_temperature.py | python to_sqlite.py --file-name ilp_out.sqlite --table-name ilp_out | python send_email.py --if-what temperature --if-lt 6 --if-gt 49 --address email@example.com --title ilp_out --throttle 180 > /dev/null 2>&1
 
-1,11,21,31,41,51 * * * * root cd /home/pi/gpio/ && flock -w 240 /tmp/to_sheet.flock python to_sheet.py --sheet-key 113eKQ16KnjqdBEzlcwK87z4KFW_5fPCpihAzaqjkMzU --sheet-name ilp_out --file-name ilp_out.sqlite --table-name ilp_out
+1,11,21,31,41,51 * * * * root cd /home/pi/raspberry-sensors/ && flock -w 240 /tmp/to_sheet.flock python to_sheet.py --sheet-key 113eKQ16KnjqdBEzlcwK87z4KFW_5fPCpihAzaqjkMzU --sheet-name ilp_out --file-name ilp_out.sqlite --table-name ilp_out
 
 0 4 * * * pi cd /home/pi/raspberry-sensors/ && bzip2 -c ilp_out.sqlite > /tmp/ilp_out.sqlite.bz2 && python copy_file_to_drive.py --file-name /tmp/ilp_out.sqlite.bz2 --folder-id 0B-ivnQ8sxGDkOGtPcDlSMVYwOVE
