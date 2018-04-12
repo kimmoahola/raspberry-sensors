@@ -10,9 +10,13 @@ Python scripts to read "1-wire" temperature sensors, and to upload results to a 
 
 - Get `client_secret.json` for google sheet communication using these instructions https://pygsheets.readthedocs.io/en/latest/authorizing.html Rename the downloaded file to `client_secret.json` and copy it to this directory
 
+- Get `pydrive_secrets.json` for google drive communication using these instructions http://pythonhosted.org/PyDrive/quickstart.html Rename the downloaded file to `pydrive_secrets.json` and copy it to this directory
+
 - Setup pyenv or just install required packages globally: `pip install -r requirements.txt`
 
 - Run `python to_sheet.py ...` with correct arguments (see crontab_example) to save google sheet credentials
+
+- Run `python copy_file_to_drive.py ...` with correct arguments (see crontab_example) to save google drive credentials
 
 - Follow the printed link
 
