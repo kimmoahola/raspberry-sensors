@@ -82,12 +82,12 @@ def highest_and_lowest_temperature(cursor, table_name, start_datetime, end_datet
 
 
 def first_day_interval():
-    return Decimal('0.5')
+    return 1  # hours
 
 
 def first_day_range():
-    # 1 day, 0.5 hour intervals
-    return range(int(1 * 24/first_day_interval()))
+    # 1.5 days, 1 hour intervals
+    return range(int(Decimal('1.5') * 24/first_day_interval()))
 
 
 def num_of_first_day_rows():
@@ -108,15 +108,15 @@ def filtered_sqlite_rows(cursor, table_name, average_minutes):
         yield row1
         yield row2
 
-    interval = 3
-    for _ in range(1 * 7 * 24/interval):  # 1 week, 3 hour intervals
+    interval = 2
+    for _ in range(2 * 24/interval):  # 2 days, 2 hour intervals
         start_datetime, row1, row2 = sqlite_rows_for_time_range(cursor, table_name, start_datetime, interval,
                                                                 average_minutes)
         yield row1
         yield row2
 
-    interval = 6
-    for _ in range(1 * 7 * 24/interval):  # 1 week, 6 hour intervals
+    interval = 3
+    for _ in range(1 * 7 * 24/interval):  # 1 week, 3 hour intervals
         start_datetime, row1, row2 = sqlite_rows_for_time_range(cursor, table_name, start_datetime, interval,
                                                                 average_minutes)
         yield row1
