@@ -44,7 +44,9 @@ def main():
     logging.captureWarnings(True)
     logging.getLogger().setLevel(logging.WARNING)
 
-    r = requests.get(ROOT_URL + 'status')
+    sensor_id = args.table_name
+
+    r = requests.get(ROOT_URL + 'status', params={'sensorId': sensor_id})
     if r.status_code == 200:
         j = r.json()
         latest_item_ts = j.get('latestItem')
@@ -53,7 +55,7 @@ def main():
 
         if rows:
             data = {
-                'sensorId': args.table_name,
+                'sensorId': sensor_id,
                 'items': [
                     {'ts': row[0], 'temperature': str(row[1])}
                     for row
