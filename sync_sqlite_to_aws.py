@@ -20,10 +20,10 @@ logger.info('----- START -----')
 def sqlite_get_rows_after_ts(cursor, table_name, start_ts, limit):
     if start_ts:
         cursor.execute(
-            'SELECT ts, temperature FROM %s WHERE ts>? ORDER BY ts LIMIT ?' % table_name, (start_ts, str(limit)))
+            'SELECT ts, temperature FROM %s WHERE ts>? GROUP BY ts LIMIT ?' % table_name, (start_ts, str(limit)))
     else:
         cursor.execute(
-            'SELECT ts, temperature FROM %s ORDER BY ts LIMIT ?' % table_name, (str(limit), ))
+            'SELECT ts, temperature FROM %s GROUP BY ts LIMIT ?' % table_name, (str(limit), ))
     return cursor.fetchall()
 
 
