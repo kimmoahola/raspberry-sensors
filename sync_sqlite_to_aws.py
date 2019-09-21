@@ -6,6 +6,8 @@ import sqlite3
 
 import requests
 
+import helpers
+
 logger = logging.getLogger('to_aws')
 handler = logging.FileHandler('to_aws.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s: %(message)s')
@@ -13,9 +15,6 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 logger.info('----- START -----')
-
-
-ROOT_URL = 'https://eqoypr4x73.execute-api.eu-north-1.amazonaws.com/production/'
 
 
 def sqlite_get_rows_after_ts(cursor, table_name, start_ts, limit):
@@ -46,7 +45,7 @@ def main():
 
     sensor_id = args.table_name
 
-    r = requests.get(ROOT_URL + 'status', params={'sensorId': sensor_id})
+    r = requests.get(helpers.STORAGE_ROOT_URL + 'status', params={'sensorId': sensor_id})
     if r.status_code == 200:
         j = r.json()
         latest_item_ts = j.get('latestItem')
@@ -63,7 +62,7 @@ def main():
                 ],
             }
 
-            requests.post(ROOT_URL + 'add', data=json.dumps(data))
+            requests.post(helpers.STORAGE_ROOT_URL + 'add', data=json.dumps(data))
 
     conn.close()
     logger.info('-----  END  -----')

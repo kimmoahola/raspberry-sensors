@@ -18,9 +18,6 @@ logger.setLevel(logging.DEBUG)
 logger.info('----- START -----')
 
 
-ROOT_URL = 'https://eqoypr4x73.execute-api.eu-north-1.amazonaws.com/production/'
-
-
 @retry(tries=10, delay=20)
 def send_to_aws(name, data_in):
     data = {
@@ -29,7 +26,7 @@ def send_to_aws(name, data_in):
         'temperature': data_in['temperature'],
     }
 
-    requests.post(ROOT_URL + 'addOne', data=json.dumps(data))
+    requests.post(helpers.STORAGE_ROOT_URL + 'addOne', data=json.dumps(data))
 
 
 @helpers.exception(logger=logger)

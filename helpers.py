@@ -6,14 +6,22 @@ import json
 import sys
 from decimal import Decimal, ROUND_HALF_UP
 from functools import wraps
+import os
+from os.path import join, dirname
 
+from dotenv import load_dotenv
 import arrow
 import pytz
 
-__author__ = 'Kimmo Ahola'
-__license__ = 'MIT'
-__version__ = '1.1'
-__email__ = 'kimmo.ahola@gmail.com'
+
+# Create .env file path.
+dotenv_path = join(dirname(__file__), '.env')
+
+# Load file from the path.
+load_dotenv(dotenv_path)
+
+
+STORAGE_ROOT_URL = os.getenv('STORAGE_ROOT_URL')
 
 
 TARGET_TIMEZONE = 'Europe/Helsinki'
