@@ -4,3 +4,4 @@
 *.pyc
 *.json
 *.sqlite
+.env
