@@ -48,7 +48,7 @@ def main():
     r = requests.get(helpers.STORAGE_ROOT_URL + 'status', params={'sensorId': sensor_id})
     if r.status_code == 200:
         j = r.json()
-        latest_item_ts = j.get('latestItem')
+        latest_item_ts = j.get('latestItem').get('ts')
         max_batch = j['config']['maxAddBatchSize']
         rows = sqlite_get_rows_after_ts(cursor, args.table_name, latest_item_ts, max_batch)
 
